@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* Class-based dark mode: toggled by adding `.dark` to <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+:root.dark {
+  color-scheme: dark;
+}
+
+/* Avoid a flash before the React island hydrates. */
+html,
+body {
+  min-height: 100vh;
+}
+
+/* Thin, monochrome scrollbar for the tableau viewport. */
+.tableau-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.tableau-scroll::-webkit-scrollbar-thumb {
+  background: rgba(115, 115, 115, 0.4);
+  border-radius: 9999px;
+}
+.tableau-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
