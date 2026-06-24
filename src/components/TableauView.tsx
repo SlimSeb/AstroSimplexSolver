@@ -8,6 +8,17 @@ interface Props {
   columnKinds: ColumnKind[];
 }
 
+/**
+ * Accent tints layered on the black/white base. Green marks the entering
+ * variable (the improving direction); orange marks the leaving variable / pivot
+ * row. The same `*-500/20` tints read correctly over white and near-black.
+ */
+const ENTER_BG = "bg-emerald-600/25";
+const ROW_BG = "bg-orange-600/25";
+const PIVOT_BG = "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-neutral-950";
+const GREEN_TEXT = "text-emerald-800 dark:text-emerald-400";
+const ORANGE_TEXT = "text-orange-700 dark:text-orange-500";
+
 export default function TableauView({ iteration, columnNames, columnKinds }: Props) {
   const { rows, objectiveRow, basis, entering, pivotRow, pivotCol } = iteration;
   const nCols = columnNames.length;
@@ -19,10 +30,9 @@ export default function TableauView({ iteration, columnNames, columnKinds }: Pro
       : "text-neutral-400 dark:text-neutral-500";
 
   const cellBg = (r: number, c: number): string => {
-    if (r === pivotRow && c === pivotCol)
-      return "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900";
-    if (c === entering) return "bg-neutral-200/70 dark:bg-neutral-800/70";
-    if (pivotRow !== null && r === pivotRow) return "bg-neutral-100 dark:bg-neutral-800/40";
+    if (r === pivotRow && c === pivotCol) return PIVOT_BG;
+    if (c === entering) return ENTER_BG;
+    if (pivotRow !== null && r === pivotRow) return ROW_BG;
     return "";
   };
 
@@ -35,8 +45,8 @@ export default function TableauView({ iteration, columnNames, columnKinds }: Pro
             {columnNames.map((name, c) => (
               <th
                 key={name}
-                className={`px-3 py-2 font-semibold ${headerTone(c)} ${
-                  c === entering ? "bg-neutral-200/70 dark:bg-neutral-800/70" : ""
+                className={`px-3 py-2 font-semibold ${
+                  c === entering ? `${ENTER_BG} ${GREEN_TEXT}` : headerTone(c)
                 }`}
               >
                 {name}
@@ -57,7 +67,11 @@ export default function TableauView({ iteration, columnNames, columnKinds }: Pro
                 layout
                 className="border-b border-neutral-100 text-neutral-700 dark:border-neutral-800/60 dark:text-neutral-200"
               >
-                <td className="px-3 py-1.5 text-left font-semibold text-neutral-600 dark:text-neutral-300">
+                <td
+                  className={`px-3 py-1.5 text-left font-semibold ${
+                    isPivotRow ? ORANGE_TEXT : "text-neutral-600 dark:text-neutral-300"
+                  }`}
+                >
                   {columnNames[basis[r]] ?? "?"}
                   {isPivotRow && <span className="ml-1">←</span>}
                 </td>
@@ -89,12 +103,8 @@ export default function TableauView({ iteration, columnNames, columnKinds }: Pro
             {objectiveRow.slice(0, nCols).map((value, c) => (
               <td
                 key={c}
-                className={`px-3 py-2 tabular-nums ${
-                  c === entering ? "bg-neutral-200/70 dark:bg-neutral-800/70" : ""
-                } ${
-                  value > 1e-9
-                    ? "font-semibold text-neutral-900 underline decoration-dotted underline-offset-4 dark:text-neutral-100"
-                    : ""
+                className={`px-3 py-2 tabular-nums ${c === entering ? ENTER_BG : ""} ${
+                  value > 1e-9 ? `font-semibold ${GREEN_TEXT}` : ""
                 }`}
               >
                 {fmt(value)}

@@ -2,6 +2,8 @@
 
 An interactive linear-programming solver built with **Astro + React islands + Tailwind CSS v4 + Framer Motion + TypeScript**. Build a linear program in the browser, solve it with the **two-phase primal Simplex method**, and step through every pivot in an animated tableau.
 
+**Live demo: [https://simplex.slim.tf/](https://simplex.slim.tf/)**
+
 ## Features
 
 - Maximisation **and** minimisation objectives.

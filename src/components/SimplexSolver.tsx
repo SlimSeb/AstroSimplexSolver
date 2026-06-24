@@ -335,7 +335,13 @@ export default function SimplexSolver() {
               <>
                 <div className="mb-4 mt-6 flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <span className="rounded-md border border-neutral-300 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
+                    <span
+                      className={`rounded-md border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${
+                        current.phase === 1
+                          ? "border-orange-600/60 text-orange-700 dark:text-orange-500"
+                          : "border-emerald-600/60 text-emerald-800 dark:text-emerald-400"
+                      }`}
+                    >
                       Phase {current.phase}
                     </span>
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">
@@ -420,10 +426,10 @@ export default function SimplexSolver() {
 function ResultHeader({ result }: { result: SimplexResult }) {
   const badge =
     result.status === "optimal"
-      ? "border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900"
+      ? "border-emerald-700 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-neutral-950"
       : result.status === "unbounded"
-        ? "border-neutral-400 text-neutral-600 dark:border-neutral-600 dark:text-neutral-300"
-        : "border-dashed border-neutral-400 text-neutral-600 dark:border-neutral-600 dark:text-neutral-300";
+        ? "border-orange-600/70 text-orange-700 dark:text-orange-500"
+        : "border-dashed border-orange-600/70 text-orange-700 dark:text-orange-500";
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
@@ -439,7 +445,7 @@ function ResultHeader({ result }: { result: SimplexResult }) {
         <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
           <span className="font-mono text-neutral-600 dark:text-neutral-300">
             Z<sup>*</sup> ={" "}
-            <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+            <span className="text-base font-semibold text-emerald-800 dark:text-emerald-500">
               {fmt(result.objectiveValue)}
             </span>
           </span>
@@ -489,15 +495,15 @@ function Legend() {
     <div className="mt-4 flex flex-col gap-2 text-xs text-neutral-500 dark:text-neutral-400">
       <div className="flex flex-wrap gap-x-5 gap-y-1.5">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-neutral-200 dark:bg-neutral-700" />
+          <span className="inline-block h-3.5 w-3.5 rounded-sm border border-emerald-600/70 bg-emerald-600/35" />
           Entering column
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm border border-neutral-400 bg-neutral-100 dark:border-neutral-600 dark:bg-neutral-800" />
+          <span className="inline-block h-3.5 w-3.5 rounded-sm border border-orange-600/70 bg-orange-600/35" />
           Pivot row
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block h-3 w-3 rounded-sm bg-neutral-900 dark:bg-white" />
+          <span className="inline-block h-3.5 w-3.5 rounded-sm border border-emerald-700 bg-emerald-700 dark:border-emerald-500 dark:bg-emerald-500" />
           Pivot element
         </span>
       </div>
