@@ -9,6 +9,7 @@ import {
 } from "../lib/simplex";
 import { fmt } from "../lib/format";
 import { PRESETS } from "../lib/presets";
+import { getMessages, type Locale, type Messages } from "../i18n";
 import TableauView from "./TableauView";
 
 interface ConstraintRow {
@@ -40,7 +41,8 @@ const ghostBtn =
 
 const varLabel = "font-mono text-sm text-neutral-500 dark:text-neutral-400";
 
-export default function SimplexSolver() {
+export default function SimplexSolver({ lang }: { lang: Locale }) {
+  const t = getMessages(lang);
   const [sense, setSense] = useState<ObjectiveSense>("max");
   const [objective, setObjective] = useState<string[]>(["3", "5"]);
   const [constraints, setConstraints] = useState<ConstraintRow[]>([
@@ -145,7 +147,7 @@ export default function SimplexSolver() {
       {/* ---------------- Problem builder ---------------- */}
       <section className={card}>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-base font-semibold">Define the problem</h2>
+          <h2 className="text-base font-semibold">{t.solver.defineProblem}</h2>
           <select
             onChange={(e) => {
               if (e.target.value) loadPreset(e.target.value);
@@ -155,11 +157,11 @@ export default function SimplexSolver() {
             className={`px-3 py-1.5 text-sm ${fieldBase}`}
           >
             <option value="" disabled>
-              Load example…
+              {t.solver.loadExample}
             </option>
             {PRESETS.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.label}
+                {t.presets[p.id]?.label ?? p.id}
               </option>
             ))}
           </select>
@@ -181,11 +183,11 @@ export default function SimplexSolver() {
                     : "bg-transparent text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800"
                 }`}
               >
-                {s}
+                {s === "max" ? t.solver.senseMax : t.solver.senseMin}
               </button>
             ))}
           </div>
-          <span className={varLabel}>Z =</span>
+          <span className={varLabel}>{t.solver.objectiveLabel}</span>
           {objective.map((c, i) => (
             <div key={i} className="flex items-center gap-1">
               <input
@@ -209,7 +211,7 @@ export default function SimplexSolver() {
               onClick={() => setVarCount(numVars - 1)}
               className={iconBtn}
               disabled={numVars <= 1}
-              title="Remove variable"
+              title={t.solver.removeVariable}
             >
               −
             </button>
@@ -217,7 +219,7 @@ export default function SimplexSolver() {
               onClick={() => setVarCount(numVars + 1)}
               className={iconBtn}
               disabled={numVars >= 8}
-              title="Add variable"
+              title={t.solver.addVariable}
             >
               +
             </button>
@@ -227,7 +229,7 @@ export default function SimplexSolver() {
         {/* constraints */}
         <div className="mb-4 flex flex-col gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
-            Subject to
+            {t.solver.subjectTo}
           </span>
           <AnimatePresence initial={false}>
             {constraints.map((row, ci) => (
@@ -294,7 +296,7 @@ export default function SimplexSolver() {
                   onClick={() => removeConstraint(ci)}
                   className={iconBtn}
                   disabled={constraints.length <= 1}
-                  title="Remove constraint"
+                  title={t.solver.removeConstraint}
                 >
                   ✕
                 </button>
@@ -302,20 +304,20 @@ export default function SimplexSolver() {
             ))}
           </AnimatePresence>
           <p className="mt-1 font-mono text-xs text-neutral-400 dark:text-neutral-500">
-            with {varNames.join(", ")} ≥ 0
+            {t.solver.nonNegativity(varNames.join(", "))}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <button onClick={addConstraint} className={ghostBtn}>
-            + Add constraint
+            {t.solver.addConstraint}
           </button>
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={solve}
             className="rounded-md bg-neutral-900 px-6 py-2 text-sm font-semibold text-white transition hover:bg-neutral-700 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
           >
-            Solve
+            {t.solver.solve}
           </motion.button>
         </div>
       </section>
@@ -329,7 +331,7 @@ export default function SimplexSolver() {
             animate={{ opacity: 1, y: 0 }}
             className={card}
           >
-            <ResultHeader result={result} />
+            <ResultHeader result={result} t={t} />
 
             {result.iterations.length > 0 && (
               <>
@@ -342,10 +344,10 @@ export default function SimplexSolver() {
                           : "border-emerald-600/60 text-emerald-800 dark:text-emerald-400"
                       }`}
                     >
-                      Phase {current.phase}
+                      {t.solver.phase(current.phase)}
                     </span>
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                      Iteration {step + 1} / {result.iterations.length}
+                      {t.solver.iteration(step + 1, result.iterations.length)}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -400,6 +402,7 @@ export default function SimplexSolver() {
                       iteration={current}
                       columnNames={result.columnNames}
                       columnKinds={result.columnKinds}
+                      labels={t.tableau}
                     />
                   </motion.div>
                 </AnimatePresence>
@@ -410,10 +413,10 @@ export default function SimplexSolver() {
                   animate={{ opacity: 1 }}
                   className="mt-3 text-sm text-neutral-500 dark:text-neutral-400"
                 >
-                  {current.note}
+                  {t.note(current.note)}
                 </motion.p>
 
-                <Legend />
+                <Legend t={t} />
               </>
             )}
           </motion.section>
@@ -423,7 +426,7 @@ export default function SimplexSolver() {
   );
 }
 
-function ResultHeader({ result }: { result: SimplexResult }) {
+function ResultHeader({ result, t }: { result: SimplexResult; t: Messages }) {
   const badge =
     result.status === "optimal"
       ? "border-emerald-700 bg-emerald-700 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-neutral-950"
@@ -434,11 +437,11 @@ function ResultHeader({ result }: { result: SimplexResult }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-3">
-        <h2 className="text-base font-semibold">Result</h2>
+        <h2 className="text-base font-semibold">{t.solver.result}</h2>
         <span
           className={`rounded-md border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${badge}`}
         >
-          {result.status}
+          {t.solver.status[result.status]}
         </span>
       </div>
       {result.status === "optimal" && (
@@ -458,12 +461,12 @@ function ResultHeader({ result }: { result: SimplexResult }) {
       )}
       {result.status === "unbounded" && (
         <span className="text-sm text-neutral-500 dark:text-neutral-400">
-          The objective grows without limit in the feasible region.
+          {t.solver.unboundedMessage}
         </span>
       )}
       {result.status === "infeasible" && (
         <span className="text-sm text-neutral-500 dark:text-neutral-400">
-          No point satisfies all constraints simultaneously.
+          {t.solver.infeasibleMessage}
         </span>
       )}
     </div>
@@ -490,26 +493,24 @@ function StepBtn({
   );
 }
 
-function Legend() {
+function Legend({ t }: { t: Messages }) {
   return (
     <div className="mt-4 flex flex-col gap-2 text-xs text-neutral-500 dark:text-neutral-400">
       <div className="flex flex-wrap gap-x-5 gap-y-1.5">
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-3.5 w-3.5 rounded-sm border border-emerald-600/70 bg-emerald-600/35" />
-          Entering column
+          {t.solver.legend.enteringColumn}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-3.5 w-3.5 rounded-sm border border-orange-600/70 bg-orange-600/35" />
-          Pivot row
+          {t.solver.legend.pivotRow}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-3.5 w-3.5 rounded-sm border border-emerald-700 bg-emerald-700 dark:border-emerald-500 dark:bg-emerald-500" />
-          Pivot element
+          {t.solver.legend.pivotElement}
         </span>
       </div>
-      <p className="font-mono">
-        xⱼ decision · sⱼ slack / surplus · aⱼ artificial
-      </p>
+      <p className="font-mono">{t.solver.legend.variableKinds}</p>
     </div>
   );
 }

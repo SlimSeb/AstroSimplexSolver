@@ -7,9 +7,8 @@ export interface PresetConstraint {
 }
 
 export interface Preset {
+  /** Stable identifier; the human-readable label/description live in i18n. */
   id: string;
-  label: string;
-  description: string;
   sense: ObjectiveSense;
   objective: number[];
   constraints: PresetConstraint[];
@@ -18,8 +17,6 @@ export interface Preset {
 export const PRESETS: Preset[] = [
   {
     id: "wyndor",
-    label: "Product mix (max)",
-    description: "Classic two-variable maximisation with three resource limits.",
     sense: "max",
     objective: [3, 5],
     constraints: [
@@ -30,8 +27,6 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "blend",
-    label: "Diet blend (min, two-phase)",
-    description: "Minimisation mixing =, <= and >= constraints, needs phase 1.",
     sense: "min",
     objective: [0.4, 0.5],
     constraints: [
@@ -42,8 +37,6 @@ export const PRESETS: Preset[] = [
   },
   {
     id: "three-var",
-    label: "Three products (max)",
-    description: "Three decision variables and two shared constraints.",
     sense: "max",
     objective: [5, 4, 3],
     constraints: [

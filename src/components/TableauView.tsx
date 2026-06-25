@@ -6,6 +6,7 @@ interface Props {
   iteration: SimplexIteration;
   columnNames: string[];
   columnKinds: ColumnKind[];
+  labels: { basis: string; rhs: string };
 }
 
 /**
@@ -19,7 +20,7 @@ const PIVOT_BG = "bg-emerald-700 text-white dark:bg-emerald-500 dark:text-neutra
 const GREEN_TEXT = "text-emerald-800 dark:text-emerald-400";
 const ORANGE_TEXT = "text-orange-700 dark:text-orange-500";
 
-export default function TableauView({ iteration, columnNames, columnKinds }: Props) {
+export default function TableauView({ iteration, columnNames, columnKinds, labels }: Props) {
   const { rows, objectiveRow, basis, entering, pivotRow, pivotCol } = iteration;
   const nCols = columnNames.length;
 
@@ -41,7 +42,7 @@ export default function TableauView({ iteration, columnNames, columnKinds }: Pro
       <table className="w-full border-collapse text-right font-mono text-sm">
         <thead>
           <tr className="border-b border-neutral-200 text-xs uppercase tracking-wide text-neutral-500 dark:border-neutral-800 dark:text-neutral-400">
-            <th className="px-3 py-2 text-left font-medium">Basis</th>
+            <th className="px-3 py-2 text-left font-medium">{labels.basis}</th>
             {columnNames.map((name, c) => (
               <th
                 key={name}
@@ -54,7 +55,7 @@ export default function TableauView({ iteration, columnNames, columnKinds }: Pro
               </th>
             ))}
             <th className="px-3 py-2 font-medium text-neutral-600 dark:text-neutral-300">
-              RHS
+              {labels.rhs}
             </th>
           </tr>
         </thead>

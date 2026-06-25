@@ -30,6 +30,16 @@ export interface LPProblem {
 /** Roles a tableau column can play, used for colour-coding in the UI. */
 export type ColumnKind = "structural" | "slack" | "surplus" | "artificial";
 
+/**
+ * A locale-agnostic description of what happened in an iteration. The solver
+ * stays language-free; the UI turns these into translated sentences.
+ */
+export type IterationNote =
+  | { kind: "optimal"; phase: 1 | 2 }
+  | { kind: "unbounded"; column: string }
+  | { kind: "pivot"; phase: 1 | 2; entering: string; leaving: string; row: number }
+  | { kind: "iteration-limit" };
+
 export interface SimplexIteration {
   phase: 1 | 2;
   index: number;
@@ -47,7 +57,7 @@ export interface SimplexIteration {
   pivotCol: number | null;
   /** Objective value of the *original* problem at this tableau. */
   objectiveValue: number;
-  note: string;
+  note: IterationNote;
 }
 
 export interface SimplexResult {
@@ -189,7 +199,7 @@ export function solveLP(problem: LPProblem): SimplexResult {
     leaving: number | null,
     pivotRow: number | null,
     pivotCol: number | null,
-    note: string,
+    note: IterationNote,
   ): void => {
     const objectiveRow = new Array(totalCols + 1).fill(0);
     let z = 0;
@@ -263,7 +273,7 @@ export function solveLP(problem: LPProblem): SimplexResult {
       }
 
       if (entering === -1) {
-        snapshot(phase, cost, null, null, null, null, `Phase ${phase} optimal: no entering variable improves the objective.`);
+        snapshot(phase, cost, null, null, null, null, { kind: "optimal", phase });
         return "optimal";
       }
 
@@ -286,7 +296,10 @@ export function solveLP(problem: LPProblem): SimplexResult {
       }
 
       if (leavingRow === -1) {
-        snapshot(phase, cost, entering, null, null, entering, `Column ${columnNames[entering]} can increase without bound, the problem is unbounded.`);
+        snapshot(phase, cost, entering, null, null, entering, {
+          kind: "unbounded",
+          column: columnNames[entering],
+        });
         return "unbounded";
       }
 
@@ -297,12 +310,18 @@ export function solveLP(problem: LPProblem): SimplexResult {
         basis[leavingRow],
         leavingRow,
         entering,
-        `Phase ${phase}: ${columnNames[entering]} enters, ${columnNames[basis[leavingRow]]} leaves (pivot on row ${leavingRow + 1}).`,
+        {
+          kind: "pivot",
+          phase,
+          entering: columnNames[entering],
+          leaving: columnNames[basis[leavingRow]],
+          row: leavingRow + 1,
+        },
       );
       pivot(leavingRow, entering);
     }
     // Iteration guard tripped; treat the current tableau as optimal.
-    snapshot(phase, cost, null, null, null, null, "Iteration limit reached.");
+    snapshot(phase, cost, null, null, null, null, { kind: "iteration-limit" });
     return "optimal";
   };
 

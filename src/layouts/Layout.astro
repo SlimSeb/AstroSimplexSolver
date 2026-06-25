@@ -1,28 +1,95 @@
 ---
 import "../styles/global.css";
+import {
+  getMessages,
+  localeMeta,
+  localePath,
+  locales,
+  type Locale,
+} from "../i18n";
 
 interface Props {
-  title?: string;
+  lang: Locale;
 }
-const { title = "Simplex Solver" } = Astro.props;
+
+const { lang } = Astro.props;
+const t = getMessages(lang);
+const meta = localeMeta[lang];
+
+// Absolute URLs for canonical / alternates. Astro.site comes from the config.
+const site = Astro.site ?? new URL("/", Astro.url);
+const canonical = new URL(localePath(lang), site);
+const alternates = locales.map((loc) => ({
+  hrefLang: localeMeta[loc].htmlLang,
+  href: new URL(localePath(loc), site).href,
+}));
+const ogImage = new URL("/og-image.png", site).href;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: t.header.title,
+  url: canonical.href,
+  description: t.meta.description,
+  applicationCategory: "EducationalApplication",
+  operatingSystem: "Any",
+  inLanguage: locales.map((loc) => localeMeta[loc].htmlLang),
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={meta.htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Interactive two-phase Simplex method linear programming solver with an animated tableau."
-    />
+    <meta name="generator" content={Astro.generator} />
+    <title>{t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <meta name="keywords" content={t.meta.keywords} />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+
+    <link rel="canonical" href={canonical.href} />
+    {
+      alternates.map((alt) => (
+        <link rel="alternate" hreflang={alt.hrefLang} href={alt.href} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={new URL(localePath("en"), site).href} />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t.header.title} />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:locale" content={meta.ogLocale} />
+    {
+      locales
+        .filter((loc) => loc !== lang)
+        .map((loc) => (
+          <meta property="og:locale:alternate" content={localeMeta[loc].ogLocale} />
+        ))
+    }
+    <meta property="og:image" content={ogImage} />
+
+    {/* Twitter */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={t.meta.title} />
+    <meta name="twitter:description" content={t.meta.description} />
+    <meta name="twitter:image" content={ogImage} />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <title>{title}</title>
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
     {/* Set the theme before paint to avoid a flash. */}
     <script is:inline>
       (() => {

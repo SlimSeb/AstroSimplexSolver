@@ -1,0 +1,41 @@
+---
+import ThemeToggle from "./ThemeToggle.astro";
+import LanguageToggle from "./LanguageToggle.astro";
+import SimplexSolver from "./SimplexSolver.tsx";
+import { getMessages, type Locale } from "../i18n";
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = getMessages(lang);
+---
+
+<main class="mx-auto w-full max-w-5xl px-5 py-12 sm:py-16">
+  <div class="mb-10 flex items-start justify-between gap-4">
+    <header>
+      <p
+        class="mb-3 inline-block border-b border-neutral-300 pb-1 text-xs font-medium uppercase tracking-[0.2em] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400"
+      >
+        {t.header.eyebrow}
+      </p>
+      <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">{t.header.title}</h1>
+      <p class="mt-4 max-w-2xl text-balance text-neutral-600 dark:text-neutral-400">
+        {t.header.intro}
+      </p>
+    </header>
+    <div class="flex shrink-0 items-center gap-2">
+      <LanguageToggle lang={lang} />
+      <ThemeToggle lang={lang} />
+    </div>
+  </div>
+
+  <SimplexSolver client:load lang={lang} />
+
+  <footer
+    class="mt-16 border-t border-neutral-200 pt-6 text-center text-xs text-neutral-400 dark:border-neutral-800 dark:text-neutral-600"
+  >
+    {t.footer.builtWith}
+  </footer>
+</main>
